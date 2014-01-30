@@ -23,4 +23,4 @@ Roadmap
 * stop script from cli or web
 * log runs
 * preset runnable commands from an external file
-* default quiet and help mods
+* default test quiet and help mods

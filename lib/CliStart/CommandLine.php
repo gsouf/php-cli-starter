@@ -9,7 +9,7 @@
  * @see                 https://github.com/pwfisher/CommandLine.php
  */
 
-namespace CS;
+namespace CliStart;
 
 class CommandLine
 {

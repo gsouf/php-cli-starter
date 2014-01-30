@@ -20,8 +20,13 @@ class Daemon {
     protected $gid;
     protected $csid;
     protected $startTime;
-    protected $commandString;
     
+    
+    protected $commandArgs;
+    protected $commandName;
+    protected $commandString;
+
+
     /**
      * Initialize this deamon with startTime, commandeString, pid, gid and uid based on the current script
      */
@@ -36,9 +41,14 @@ class Daemon {
         $this->userName = $userData["name"];
         
         $this->_generateCliId();
-        $this->commandString = join(" ", $_SERVER["argv"]);
     }
     
+    public function parseInputArgs($argv){
+        $this->commandString = join(" ", $argv);
+        $this->commandArgs = CommandLine::parseArgs($argv);
+        unset($this->commandArgs[0]);
+        $this->commandName = isset($argv[1]) ? $argv[1] : null;
+    }
     /**
      * Initilize with the given file path
      * @param string $jsonFilePath path to the csrun.json
@@ -92,6 +102,27 @@ class Daemon {
         return $this->name;
     }
     
+    public function getUid() {
+        return $this->uid;
+    }
+
+    public function getUserName() {
+        return $this->userName;
+    }
+
+    public function getGid() {
+        return $this->gid;
+    }
+
+    public function getCommandArgs() {
+        return $this->commandArgs;
+    }
+
+    public function getCommandName() {
+        return $this->commandName;
+    }
+
+        
     
     /**
      * @deprecated

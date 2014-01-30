@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Cs;
+namespace CliStart;
 
 /**
  * Cli
@@ -10,39 +10,55 @@ namespace Cs;
  */
 abstract class Cli {
     
-    protected static $cliId;
-    protected static $startTime;
-    protected static $pid;
-    protected static $command;
-
+    private static $commands = array();
+    
+    /**
+     * Daemon of the current script
+     * @var \CliStart\Daemon
+     */
+    private static $daemon;
+    
+    private static $csRunDir;
     
     
-    public static function start(){
-        self::$startTime = microtime(true);
-        self::$pid       = getmypid();
-        self::$cliId     = self::_generateCliId();
+    public static function runDir($runDir = null){
+        if(null !== $runDir)
+            self::$csRunDir = $runDir;
+        
+        return self::$csRunDir;
     }
     
     /**
      * @param \CS\Command $command
      */
-    public static function registerCommand(\CS\Command $command){
-        self::$command    = $command;
+    public static function registerCommand(\CliStart\CommandDeclaration $command){
+        self::$commands[$command->getName()] = $command;
     }
 
     /**
-     * generate a cli id intended to uniquely identify this cli script
-     * @return type
+     * Set and/or Get daemon of the current script
+     * @param \CliStart\Daemon $daemon
+     * @return Daemon
      */
-    protected static function _generateCliId(){
-        return self::$pid . '-' . self::$startTime . '-' . rand(0, 9) . rand(0, 9);
+    public static function daemon(\CliStart\Daemon $daemon=null){
+        if(null !== $daemon)
+            self::$daemon = $daemon;
+        
+        return self::$daemon;
+    }
+   
+    
+    public static function hasCommand($name){
+        return isset(self::$commands[$name]);
     }
     
-    public static function getCliId(){
-        return self::$cliId;
-    }
-    public static function getStartTime(){
-        return self::$startTime;
+    /**
+     * 
+     * @param type $name
+     * @return CommandDeclaration
+     */
+    public static function getCommandDeclaration($name){
+        return self::$commands[$name];
     }
     
     
