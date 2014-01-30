@@ -1,10 +1,7 @@
 {
-    "require":{
-    },
     "autoload":{
         "psr-0": {
-            "cli":"lib",
-            "CS":"lib",
+            "CliStart":"lib",
             "Command":""
         }
     }

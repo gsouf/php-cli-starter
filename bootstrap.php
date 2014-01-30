@@ -11,3 +11,6 @@ define("APP_ROOT" , __DIR__);
 include APP_ROOT . "/vendor/autoload.php";
 
 
+$daemon = new \CliStart\Daemon();
+$daemon->initialize();
+
