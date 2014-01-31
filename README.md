@@ -1,26 +1,41 @@
 CLI-STARTER
 ===========
 
+Cli starter is not ready yet (but it's  really close!)
 
 
+Features
+========
+
+* Argument definition
+* Argument type verification and filtering
+* Max instance of running script
+* Easy command configuration
+* Log runs
 
 
-Included Dependancies
-=====================
-
-* https://github.com/pwfisher/CommandLine.php
-
-
-Roadmap
+Incomming Features
 =======
 
 * Steps
 * Checkpoint
 
-* Control run through runConf files
 * monitor run via cli or web 
-* start script from cli or web
+* start script from web
 * stop script from cli or web
-* log runs
-* preset runnable commands from an external file
 * default test quiet and help mods
+* delay between script run
+* configurable cron mod
+
+
+Reserved Args
+=============
+
+* quiet
+* help
+* conf-file
+
+Included Dependancies
+=====================
+
+* https://github.com/pwfisher/CommandLine.php
