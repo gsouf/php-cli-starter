@@ -10,7 +10,7 @@ namespace CliStart;
 class TestCommand extends Command {
 
     public function test(){
-        sleep(5);
+        sleep(1);
         var_dump($this->getArgValue("e"));
     }
     

@@ -48,11 +48,15 @@ if(!CliStart\Cli::hasCommand($daemon->getCommandName())){
 // get the COMMANDE DECLARATION
 $commandeDeclaration = CliStart\Cli::getCommandDeclaration($daemon->getCommandName());
 
-// validate the args
-if(!$commandeDeclaration->validateArgs($daemon->getCommandArgs())){
-    // TODO try/catch
-    // TODO : end and log
-    die("Arguments are not valid \n");
+try{
+    // validate the args
+    if(!$commandeDeclaration->validateArgs($daemon->getCommandArgs())){
+        // TODO try/catch
+        // TODO : end and log
+        die("Arguments are not valid \n");
+    }
+}  catch (Exception $e){
+    die("Can't start the script : " . $e->getMessage() . "\n");
 }
 
 
@@ -76,19 +80,25 @@ if(!is_subclass_of($className,"CliStart\Command")){
 
    
 // check if command is runnable
-if(!CliStart\Cli::commandIsRunnable($commandeDeclaration)){
-    die("Command is not runnable");
+try{
+    if(!CliStart\Cli::commandIsRunnable($commandeDeclaration)){
+        die("Command is not runnable");
+    }
+
+    if(!CliStart\Cli::saveDaemon()){
+        die("Cant Daemonize");
+    }
+}  catch (Exception $e){
+    die("Can't start the script : " . $e->getMessage());
 }
 
-if(!CliStart\Cli::saveDaemon()){
-    die("Cant Daemonize");
-}
 $user = $daemon->getUserName();
 $command = $daemon->getCommandString();
-CliStart\Cli::log(CliStart\Cli::$runLog, "Daemon Started : [$user][$command]");
+$commandName = $daemon->getCommandName();
+CliStart\Cli::log(CliStart\Cli::$runLog, "[start][$user][$command][$commandName]");
 
 register_shutdown_function(function(){
-    CliStart\Cli::log(CliStart\Cli::$runLog, "Daemon Stoped");
+    CliStart\Cli::log(CliStart\Cli::$runLog, "[stop]");
     CliStart\Cli::stopDaemon();
 });
 
