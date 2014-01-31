@@ -4,6 +4,11 @@
 if(php_sapi_name() != "cli")
     die("This scriptis only CLI callable");
 
+
+//**********************
+//  INIT THE APPLICATION
+//**********************
+
 // define root path to the application
 define("APP_ROOT" , __DIR__);
 
@@ -17,11 +22,23 @@ $daemon->initialize();
 // parse args
 $daemon->parseInputArgs($_SERVER['argv']);
 
-// register daemon
+// registering daemon
 CliStart\Cli::daemon($daemon);
 
 // config the base application
 include APP_ROOT . "/app-config.dist.php";
+
+// declare the cs run dir
+CliStart\Cli::runDir(APP_ROOT . "/cs-data/run");
+CliStart\Cli::runArchivesDir(APP_ROOT . "/cs-data/run-archives");
+
+
+
+
+
+//*******************************************************
+//  BEFORE DAEMONIZING WE CHECK IF ALL REQUIREMENT ARE OK
+//*******************************************************
 
 // check if command exists
 if(!CliStart\Cli::hasCommand($daemon->getCommandName())){
@@ -39,6 +56,8 @@ if(!$commandeDeclaration->validateArgs($daemon->getCommandArgs())){
     die("Arguments are not valid \n");
 }
 
+
+// Check if class/method exist
 $className = $commandeDeclaration->getCommandClass();
 $methodName = $commandeDeclaration->getCommandMethod();
 
@@ -49,6 +68,31 @@ if(!is_subclass_of($className,"CliStart\Command")){
     die("Class '$className' must extend 'CliStart\Command'");
 }
 
+
+
+
+//**************************************************
+// all basical requirements are ok, now DAEMON JOB !
+//**************************************************
+
+   
+// check if command is runnable
+if(!CliStart\Cli::commandIsRunnable($commandeDeclaration)){
+    die("Command is not runnable");
+}
+
+if(!CliStart\Cli::saveDaemon()){
+    die("Cant Daemonize");
+}
+
+register_shutdown_function(function(){
+    CliStart\Cli::stopDaemon();
+});
+
+
+
+
+// ALL IS OK LET'S RUN ! 
 $commandExecutable = new $className();
 $commandExecutable->setArgs($daemon->getCommandArgs());
 $commandExecutable->setDaemon($daemon);

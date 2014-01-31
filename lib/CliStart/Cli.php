@@ -19,14 +19,82 @@ abstract class Cli {
     private static $daemon;
     
     private static $csRunDir;
+
+    public static function commandIsRunnable(CommandDeclaration $command){
+        
+        // check if maxInstance is reached
+        if($command->getMaxInstances()<0)
+            return false; // todo : no instance allowed
+        if($command->getMaxInstances() > 0){
+            $runningInstances = self::countRunningInstances($command);
+            if($runningInstances >= $command->getMaxInstances())
+                return false;
+        }
+        
+        
+        
+        // check if time is ok
+        // TODO
+        
+        
+        return true;
+        
+    }
     
+    public static function stopDaemon(){
+        $daemon  = self::$daemon;
+        $command = self::getCommandDeclaration($daemon->getCommandName());
+        
+        $runDir = self::getCommandRunDir($command);
+        $fileName = $daemon->getCsId() . ".csrun.json";
+        unlink($runDir . "/" . $fileName);
+    }
+
+
+    public static function saveDaemon(){
+        $daemon  = self::$daemon;
+        $command = self::getCommandDeclaration($daemon->getCommandName());
+        
+        $runDir = self::getCommandRunDir($command);
+        if(!file_exists($runDir)){
+            if(!mkdir($runDir, 0777, true)){
+                return false;
+            }
+        }
+        
+        $fileName = $daemon->getCsId() . ".csrun.json";
+        
+        if(file_put_contents($runDir . "/" . $fileName,$daemon->jsonize()) === false){
+            return false;
+        }
+        
+        return true;
+    }
+
+
+    public static function getCommandRunDir(CommandDeclaration $command){
+        return self::$csRunDir . "/" . "command-" . $command->getName();
+    }
     
+
+    public static function getCommandFilePattern(CommandDeclaration $command){
+        return self::getCommandRunDir($command) . "/*.csrun.json";
+    }
+    
+    public static function countRunningInstances(CommandDeclaration $command){
+        $pattern = self::getCommandFilePattern($command);
+        return count(glob($pattern));
+        
+    }
+
+
     public static function runDir($runDir = null){
         if(null !== $runDir)
             self::$csRunDir = $runDir;
         
         return self::$csRunDir;
     }
+
     
     /**
      * @param \CS\Command $command

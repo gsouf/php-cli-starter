@@ -43,6 +43,22 @@ class Daemon {
         $this->_generateCliId();
     }
     
+    public function jsonize(){
+        return json_encode(
+                array(
+                    "pid" => $this->pid,
+                    "gid" => $this->gid,
+                    "uid" => $this->uid,
+                    "userName" => $this->userName,
+                    "csid" => $this->csid,
+                    "startTime" => $this->startTime,
+                    "commandString" => $this->commandString,
+                    "commandName" => $this->commandName,
+                    "commandArgs" => $this->commandArgs,
+                )
+        );
+    }
+    
     public function parseInputArgs($argv){
         $this->commandString = join(" ", $argv);
         $this->commandArgs = CommandLine::parseArgs($argv);
@@ -70,6 +86,8 @@ class Daemon {
         $this->csid = $data["csid"];
         $this->startTime = $data["startTime"];
         $this->commandString = $data["commandString"];
+        $this->commandName = $data["commandName"];
+        $this->commandArgs = $data["commandArgs"];
         
     }
     
@@ -85,7 +103,7 @@ class Daemon {
     }
 
     public function getCsId() {
-        return $this->csId;
+        return $this->csid;
     }
 
     public function getStartTime() {
