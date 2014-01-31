@@ -19,6 +19,9 @@ abstract class Cli {
     private static $daemon;
     
     private static $csRunDir;
+    
+    public static $runLog;
+    public static $errorLog;
 
     public static function commandIsRunnable(CommandDeclaration $command){
         
@@ -38,6 +41,17 @@ abstract class Cli {
         
         
         return true;
+        
+    }
+    
+    public static function log($file,$message){
+        
+        
+        $date = date("Y-m-d h:i:s");
+        $csId = self::daemon()->getCsId();
+        $finalMessage = "[$date][$csId]$message\n";
+        
+        file_put_contents($file, $finalMessage, FILE_APPEND);
         
     }
     

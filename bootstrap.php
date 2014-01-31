@@ -28,11 +28,10 @@ CliStart\Cli::daemon($daemon);
 // config the base application
 include APP_ROOT . "/app-config.dist.php";
 
-// declare the cs run dir
+// declare the dir
 CliStart\Cli::runDir(APP_ROOT . "/cs-data/run");
-CliStart\Cli::runArchivesDir(APP_ROOT . "/cs-data/run-archives");
-
-
+CliStart\Cli::$runLog = APP_ROOT . "/cs-data/log/run.log";
+CliStart\Cli::$errorLog = APP_ROOT . "/cs-data/log/error.log";
 
 
 
@@ -84,8 +83,12 @@ if(!CliStart\Cli::commandIsRunnable($commandeDeclaration)){
 if(!CliStart\Cli::saveDaemon()){
     die("Cant Daemonize");
 }
+$user = $daemon->getUserName();
+$command = $daemon->getCommandString();
+CliStart\Cli::log(CliStart\Cli::$runLog, "Daemon Started : [$user][$command]");
 
 register_shutdown_function(function(){
+    CliStart\Cli::log(CliStart\Cli::$runLog, "Daemon Stoped");
     CliStart\Cli::stopDaemon();
 });
 
