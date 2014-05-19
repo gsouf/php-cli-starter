@@ -11,9 +11,20 @@ You can interact with them while they are running, stop them at any moment.
 Cli starter also offers you an easy way to configure and create your commands.
 
 
-
 Usage
 =====
+
+````sh
+
+    // call "commandname" command with option "username" for option "u"
+    bootstrap.php commandname -u "username"
+
+```
+
+
+
+Install
+=======
 
 Cli Starter is delivered as a library. You can install it via composer : ``sneakybobito/cli-starter``
 
