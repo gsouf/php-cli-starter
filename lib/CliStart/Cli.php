@@ -95,7 +95,9 @@ class Cli {
         $methodName = $commandDeclaration->getCommandMethod();
 
         $commandExecutable = new $className();
+        /* @var $commandExecutable Command */
         $this->runningCommand = $commandExecutable;
+        $commandExecutable->setCli($this);
         $commandExecutable->setArgs($daemon->getCommandArgs());
         $commandExecutable->setDaemon($daemon);
         $commandExecutable->setCommandDeclaration($commandDeclaration);

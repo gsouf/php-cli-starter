@@ -23,6 +23,8 @@ class Command {
     private $startTime;
 
 
+    private $cli;
+
     public function initStartTime()
     {
         $this->startTime = microtime(true);
@@ -61,6 +63,23 @@ class Command {
     public function getArgValue($name){
         return $this->commandDeclaration->getArg($name)->getValue($this->args);
     }
+
+    /**
+     * @param mixed $cli
+     */
+    public function setCli($cli)
+    {
+        $this->cli = $cli;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCli()
+    {
+        return $this->cli;
+    }
+
     
     
 }
