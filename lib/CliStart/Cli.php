@@ -17,8 +17,11 @@ class Cli {
      * @var \CliStart\Daemon
      */
     private $daemon;
-    
-    private $csRunDir;
+
+    /**
+     * @var DataAdapter
+     */
+    private $dataAdapter;
     
     public $runLog;
     public $errorLog;
@@ -124,7 +127,7 @@ class Cli {
         if($command->getMaxInstances()<0)
             return false; // todo : no instance allowed
         if($command->getMaxInstances() > 0){
-            $runningInstances = $this->countRunningInstances($command);
+            $runningInstances = $this->dataAdapter->countRunningInstances($command);
             if($runningInstances >= $command->getMaxInstances())
                 return false;
         }
@@ -133,6 +136,24 @@ class Cli {
         return true;
         
     }
+
+    /**
+     * @param \CliStart\DataAdapter $dataAdapter
+     */
+    public function setDataAdapter($dataAdapter)
+    {
+        $this->dataAdapter = $dataAdapter;
+    }
+
+    /**
+     * @return \CliStart\DataAdapter
+     */
+    public function getDataAdapter()
+    {
+        return $this->dataAdapter;
+    }
+
+
     
     public function log($file,$message){
         
@@ -149,9 +170,7 @@ class Cli {
         $daemon  = $this->daemon;
         $command = $this->getCommandDeclaration($daemon->getCommandName());
         
-        $runDir = $this->getCommandRunDir($command);
-        $fileName = $daemon->getCsId() . ".csrun.json";
-        unlink($runDir . "/" . $fileName);
+        $this->dataAdapter->deleteRunner($command,$daemon);
     }
 
 
@@ -159,45 +178,18 @@ class Cli {
         $daemon  = $this->daemon;
         $command = $this->getCommandDeclaration($daemon->getCommandName());
         
-        $runDir = $this->getCommandRunDir($command);
-        if(!file_exists($runDir)){
-            if(!mkdir($runDir, 0777, true)){
-                return false;
-            }
-        }
-        
-        $fileName = $daemon->getCsId() . ".csrun.json";
-        
-        if(file_put_contents($runDir . "/" . $fileName,$daemon->jsonize()) === false){
-            return false;
-        }
-        
-        return true;
+        return $this->dataAdapter->createRunner($command,$daemon);
     }
 
 
-    public function getCommandRunDir(CommandDeclaration $command){
-        return $this->csRunDir . "/" . "command-" . $command->getName();
-    }
+
+
+
     
 
-    public function getCommandFilePattern(CommandDeclaration $command){
-        return $this->getCommandRunDir($command) . "/*.csrun.json";
-    }
-    
-    public function countRunningInstances(CommandDeclaration $command){
-        $pattern = $this->getCommandFilePattern($command);
-        return count(glob($pattern));
-        
-    }
 
 
-    public function runDir($runDir = null){
-        if(null !== $runDir)
-            $this->csRunDir = $runDir;
-        
-        return $this->csRunDir;
-    }
+
 
     
     /**

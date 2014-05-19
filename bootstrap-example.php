@@ -31,8 +31,14 @@ $cli->daemon($daemon);
 // config the base application
 include APP_ROOT . "/app-config.dist.php";
 
-// declare the dir
-$cli->runDir(APP_ROOT . "/cs-data/run");
+
+// configure the io
+$dataAdapter = new \CliStart\DataAdapter\JsonFile();
+$dataAdapter->setRunDir(APP_ROOT . "/cs-data/run");
+$cli->setDataAdapter($dataAdapter);
+
+
+// configure logger
 $cli->runLog = APP_ROOT . "/cs-data/log/run.log";
 $cli->errorLog = APP_ROOT . "/cs-data/log/error.log";
 
