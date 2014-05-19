@@ -1,8 +1,24 @@
 {
+
+    "name": "sneakybobito/cli-starter",
+    "type": "library",
+    "description": "Daemonize php scripts",
+    "keywords": ["cli","daemon"],
+    "homepage": "https://github.com/SneakyBobito/php-cli-starter",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Soufiane Ghzal",
+            "email": "sghzal@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3"
+    },
+
     "autoload":{
         "psr-0": {
-            "CliStart":"lib",
-            "Command":""
+            "CliStart":"lib"
         }
     }
 }
