@@ -170,15 +170,23 @@ class Cli {
         $daemon  = $this->daemon;
         $command = $this->getCommandDeclaration($daemon->getCommandName());
         
-        $this->dataAdapter->deleteRunner($command,$daemon);
+        $this->dataAdapter->deleteRunner($daemon->getCsId());
     }
 
 
     public function saveDaemon(){
         $daemon  = $this->daemon;
         $command = $this->getCommandDeclaration($daemon->getCommandName());
-        
-        return $this->dataAdapter->createRunner($command,$daemon);
+
+
+
+        if(!$this->dataAdapter->createRunner($command,$daemon->getCsId() ) ){
+            return false;
+        }
+
+        $this->dataAdapter->setRunnerDataArray($daemon->getCsId() , $daemon->getSerializableArray());
+        return true;
+
     }
 
 

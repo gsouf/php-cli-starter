@@ -43,20 +43,20 @@ class Daemon {
         $this->_generateCliId();
     }
     
-    public function jsonize(){
-        return json_encode(
-                array(
-                    "pid" => $this->pid,
-                    "gid" => $this->gid,
-                    "uid" => $this->uid,
-                    "userName" => $this->userName,
-                    "csid" => $this->csid,
-                    "startTime" => $this->startTime,
-                    "commandString" => $this->commandString,
-                    "commandName" => $this->commandName,
-                    "commandArgs" => $this->commandArgs,
-                )
-        );
+    public function getSerializableArray(){
+        return
+            array(
+                "pid" => $this->pid,
+                "gid" => $this->gid,
+                "uid" => $this->uid,
+                "userName" => $this->userName,
+                "csid" => $this->csid,
+                "startTime" => $this->startTime,
+                "commandString" => $this->commandString,
+                "commandName" => $this->commandName,
+                "commandArgs" => $this->commandArgs,
+                "runningDatas" => new \stdClass()
+            );
     }
     
     public function parseInputArgs($argv){

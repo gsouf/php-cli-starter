@@ -45,6 +45,25 @@ class JsonFile implements DataAdapter{
     }
 
 
+    public function getCommandFile(CommandDeclaration $command, $csid)
+    {
+        $runDir = $this->getCommandRunDir($command);
+        $fileName = $csid . ".csrun.json";
+        return $runDir . "/" . $fileName;
+    }
+
+    public function getRunnerFile($csid){
+        $filePatern = $this->getRunDir() . "/command-*/$csid.csrun.json";
+        $file = glob($filePatern);
+
+        if(count($file) == 1){
+            return $file[0];
+        }
+
+        return false;
+    }
+
+
 
 
 
@@ -56,16 +75,14 @@ class JsonFile implements DataAdapter{
      * @param CommandDeclaration $command
      * @return int
      */
-    public function countRunningInstances(CommandDeclaration $command)
-    {
+    public function countRunningInstances(CommandDeclaration $command){
         $pattern = $this->getCommandFilePattern($command);
         return count(glob($pattern));
     }
 
 
 
-    public function createRunner(CommandDeclaration $command,Daemon $daemon)
-    {
+    public function createRunner(CommandDeclaration $command,$csid){
         $runDir = $this->getCommandRunDir($command);
         if(!file_exists($runDir)){
             if(!mkdir($runDir, 0777, true)){
@@ -73,45 +90,61 @@ class JsonFile implements DataAdapter{
             }
         }
 
-        $fileName = $daemon->getCsId() . ".csrun.json";
-
-        if(file_put_contents($runDir . "/" . $fileName,$daemon->jsonize()) === false){
+        if(file_put_contents($this->getCommandFile($command,$csid),"{}") === false){
             return false;
         }
 
         return true;
     }
 
-    public function deleteRunner(CommandDeclaration $command, Daemon $daemon)
-    {
-        $runDir = $this->getCommandRunDir($command);
-        $fileName = $daemon->getCsId() . ".csrun.json";
-        unlink($runDir . "/" . $fileName);
+    public function deleteRunner($csid){
+        unlink($this->getRunnerFile($csid));
     }
 
 
-    public function getRunnerData($name)
-    {
-        // TODO: Implement getRunnerData() method.
+    public function getRunnerData($csid , $name){
+        //file_get_contents();
     }
 
-    public function setRunnerDataArray($name, $value)
-    {
-        // TODO: Implement setRunnerDataArray() method.
+    public function setRunnerDataArray($csid , $newData){
+        $filename = $this->getRunnerFile($csid);
+
+        if(!$filename)
+            return false;
+
+        $actualData = json_decode(file_get_contents($filename),true);
+
+        if(null === $actualData)
+            return false;
+
+        $finalData = array_merge($actualData,$newData);
+
+        file_put_contents($filename,json_encode($finalData));
+
+        return true;
+
     }
 
 
-    public function setRunnerData($name, $value)
-    {
-        // TODO: Implement setRunnerData() method.
+    public function setRunnerData($csid , $name, $value){
+        $filename = $this->getRunnerFile($csid);
+
+        if(!$filename)
+            return false;
+
+        $actualData = json_decode(file_get_contents($filename),true);
+
+        if(null === $actualData)
+            return false;
+
+        $actualData[$name] = $value;
+
+        file_put_contents($filename,json_encode($actualData));
+
+        return true;
     }
 
-    public function getRunner($pid)
-    {
+    public function getRunner($csid){
         // TODO: Implement getRunner() method.
     }
-
-
-
-
 }

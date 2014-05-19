@@ -11,12 +11,12 @@ namespace CliStart;
 
 interface DataAdapter {
 
-    public function createRunner(CommandDeclaration $command,Daemon $daemon);
-    public function getRunnerData($name);
-    public function setRunnerData($name,$value);
-    public function setRunnerDataArray($name,$value);
-    public function getRunner($pid);
-    public function deleteRunner(CommandDeclaration $commandDeclaration,Daemon $daemon);
+    public function createRunner(CommandDeclaration $command,$csid);
+    public function getRunnerData($csid,$name);
+    public function setRunnerData($csid,$name,$value);
+    public function setRunnerDataArray($csid,$dataArray);
+    public function getRunner($csid);
+    public function deleteRunner($csid);
     public function countRunningInstances(CommandDeclaration $commandName);
 
 }
