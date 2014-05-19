@@ -22,16 +22,19 @@ $daemon->initialize();
 // parse args
 $daemon->parseInputArgs($_SERVER['argv']);
 
+
+$cli = new \CliStart\Cli();
+
 // registering daemon
-CliStart\Cli::daemon($daemon);
+$cli->daemon($daemon);
 
 // config the base application
 include APP_ROOT . "/app-config.dist.php";
 
 // declare the dir
-CliStart\Cli::runDir(APP_ROOT . "/cs-data/run");
-CliStart\Cli::$runLog = APP_ROOT . "/cs-data/log/run.log";
-CliStart\Cli::$errorLog = APP_ROOT . "/cs-data/log/error.log";
+$cli->runDir(APP_ROOT . "/cs-data/run");
+$cli->runLog = APP_ROOT . "/cs-data/log/run.log";
+$cli->errorLog = APP_ROOT . "/cs-data/log/error.log";
 
 
 
@@ -39,38 +42,13 @@ CliStart\Cli::$errorLog = APP_ROOT . "/cs-data/log/error.log";
 //  BEFORE DAEMONIZING WE CHECK IF ALL REQUIREMENT ARE OK
 //*******************************************************
 
-// check if command exists
-if(!CliStart\Cli::hasCommand($daemon->getCommandName())){
-    // TODO : end and log
-    die("Call to undefined command : '" . $daemon->getCommandName() . "'\n");
-}
-
-// get the COMMANDE DECLARATION
-$commandeDeclaration = CliStart\Cli::getCommandDeclaration($daemon->getCommandName());
-
 try{
-    // validate the args
-    if(!$commandeDeclaration->validateArgs($daemon->getCommandArgs())){
-        // TODO try/catch
-        // TODO : end and log
-        die("Arguments are not valid \n");
+    if(!$cli->checkRequirement()){
+        die("error");
     }
-}  catch (Exception $e){
-    die("Can't start the script : " . $e->getMessage() . "\n");
+}catch (\Exception $e){
+    die($e->getMessage());
 }
-
-
-// Check if class/method exist
-$className = $commandeDeclaration->getCommandClass();
-$methodName = $commandeDeclaration->getCommandMethod();
-
-if(!class_exists($className)){
-    die("Class '$className' doesn't exist");
-}
-if(!is_subclass_of($className,"CliStart\Command")){
-    die("Class '$className' must extend 'CliStart\Command'");
-}
-
 
 
 
@@ -78,37 +56,9 @@ if(!is_subclass_of($className,"CliStart\Command")){
 // all basical requirements are ok, now DAEMON JOB !
 //**************************************************
 
-   
-// check if command is runnable
 try{
-    if(!CliStart\Cli::commandIsRunnable($commandeDeclaration)){
-        die("Command is not runnable");
-    }
-
-    if(!CliStart\Cli::saveDaemon()){
-        die("Cant Daemonize");
-    }
-}  catch (Exception $e){
-    die("Can't start the script : " . $e->getMessage());
+    $cli->start();
+}catch (\Exception $e){
+    die($e->getMessage());
 }
 
-$user = $daemon->getUserName();
-$command = $daemon->getCommandString();
-$commandName = $daemon->getCommandName();
-CliStart\Cli::log(CliStart\Cli::$runLog, "[start][$user][$command][$commandName]");
-
-register_shutdown_function(function(){
-    CliStart\Cli::log(CliStart\Cli::$runLog, "[stop]");
-    CliStart\Cli::stopDaemon();
-});
-
-
-
-
-// ALL IS OK LET'S RUN ! 
-$commandExecutable = new $className();
-$commandExecutable->setArgs($daemon->getCommandArgs());
-$commandExecutable->setDaemon($daemon);
-$commandExecutable->setCommandDeclaration($commandeDeclaration);
-
-$commandExecutable->$methodName();

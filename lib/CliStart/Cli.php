@@ -8,68 +8,158 @@ namespace CliStart;
  *
  * @author sghzal
  */
-abstract class Cli {
+class Cli {
     
-    private static $commands = array();
+    private $commands = array();
     
     /**
      * Daemon of the current script
      * @var \CliStart\Daemon
      */
-    private static $daemon;
+    private $daemon;
     
-    private static $csRunDir;
+    private $csRunDir;
     
-    public static $runLog;
-    public static $errorLog;
+    public $runLog;
+    public $errorLog;
 
-    public static function commandIsRunnable(CommandDeclaration $command){
+    /**
+     * @var Command
+     */
+    private $runningCommand;
+
+    public function checkRequirement(){
+
+        $cli = $this;
+        $daemon = $this->daemon;
+
+        // check if command exists
+        if(!$cli->hasCommand($daemon->getCommandName())){
+            throw new \Exception("Call to undefined command : '" . $daemon->getCommandName() . "'\n");
+        }
+
+        // get the COMMANDE DECLARATION
+        $commandDeclaration = $cli->getCommandDeclaration($daemon->getCommandName());
+
+        if(!$commandDeclaration->validateArgs($daemon->getCommandArgs())){
+            throw new \Exception("Arguments are not valid \n");
+        }
+
+        // Check if class/method exist
+        $className = $commandDeclaration->getCommandClass();
+        $methodName = $commandDeclaration->getCommandMethod();
+
+        if(!class_exists($className)){
+            throw new \Exception("Class '$className' doesn't exist");
+        }
+        if(!is_subclass_of($className,"CliStart\Command")){
+            throw new \Exception("Class '$className' must extend 'CliStart\Command'");
+        }
+
+
+        if(!$this->commandIsRunnable($commandDeclaration)){
+            throw new \Exception("Command is not runnable");
+        }
+
+        return true;
+
+    }
+
+    public function start(){
+
+        $daemon = $this->daemon;
+
+        // get the COMMANDE DECLARATION
+        $commandDeclaration = $this->getCommandDeclaration($daemon->getCommandName());
+
+        if(!$this->saveDaemon()){
+            throw new \Exception("Cant Daemonize");
+        }
+
+        $user = $daemon->getUserName();
+        $command = $daemon->getCommandString();
+        $commandName = $daemon->getCommandName();
+        $this->log($this->runLog, "[start][$user][$command][$commandName]");
+
+
+        $cli = $this;
+
+        register_shutdown_function(function()use($cli){
+            $cli->stop();
+        });
+
+        $className = $commandDeclaration->getCommandClass();
+        $methodName = $commandDeclaration->getCommandMethod();
+
+        $commandExecutable = new $className();
+        $this->runningCommand = $commandExecutable;
+        $commandExecutable->setArgs($daemon->getCommandArgs());
+        $commandExecutable->setDaemon($daemon);
+        $commandExecutable->setCommandDeclaration($commandDeclaration);
+        $commandExecutable->initStartTime();
+
+        $commandExecutable->$methodName();
+
+
+
+    }
+
+    /**
+     * used internally to stop the script properly. Do not call directly
+     */
+    public function stop(){
+        if($this->runningCommand){
+
+            $runningTime = $this->runningCommand->getRunningTime();
+
+            $this->log($this->runLog, "[stop] running time : $runningTime");
+            $this->stopDaemon();
+            $this->runningCommand = null;
+        }
+    }
+
+    public function commandIsRunnable(CommandDeclaration $command){
         
         // check if maxInstance is reached
         if($command->getMaxInstances()<0)
             return false; // todo : no instance allowed
         if($command->getMaxInstances() > 0){
-            $runningInstances = self::countRunningInstances($command);
+            $runningInstances = $this->countRunningInstances($command);
             if($runningInstances >= $command->getMaxInstances())
                 return false;
         }
-        
-        
-        
-        // check if time is ok
-        // TODO
         
         
         return true;
         
     }
     
-    public static function log($file,$message){
+    public function log($file,$message){
         
         
         $date = date("Y-m-d h:i:s");
-        $csId = self::daemon()->getCsId();
+        $csId = $this->daemon()->getCsId();
         $finalMessage = "[$date][$csId]$message\n";
         
         file_put_contents($file, $finalMessage, FILE_APPEND);
         
     }
     
-    public static function stopDaemon(){
-        $daemon  = self::$daemon;
-        $command = self::getCommandDeclaration($daemon->getCommandName());
+    public function stopDaemon(){
+        $daemon  = $this->daemon;
+        $command = $this->getCommandDeclaration($daemon->getCommandName());
         
-        $runDir = self::getCommandRunDir($command);
+        $runDir = $this->getCommandRunDir($command);
         $fileName = $daemon->getCsId() . ".csrun.json";
         unlink($runDir . "/" . $fileName);
     }
 
 
-    public static function saveDaemon(){
-        $daemon  = self::$daemon;
-        $command = self::getCommandDeclaration($daemon->getCommandName());
+    public function saveDaemon(){
+        $daemon  = $this->daemon;
+        $command = $this->getCommandDeclaration($daemon->getCommandName());
         
-        $runDir = self::getCommandRunDir($command);
+        $runDir = $this->getCommandRunDir($command);
         if(!file_exists($runDir)){
             if(!mkdir($runDir, 0777, true)){
                 return false;
@@ -86,35 +176,35 @@ abstract class Cli {
     }
 
 
-    public static function getCommandRunDir(CommandDeclaration $command){
-        return self::$csRunDir . "/" . "command-" . $command->getName();
+    public function getCommandRunDir(CommandDeclaration $command){
+        return $this->csRunDir . "/" . "command-" . $command->getName();
     }
     
 
-    public static function getCommandFilePattern(CommandDeclaration $command){
-        return self::getCommandRunDir($command) . "/*.csrun.json";
+    public function getCommandFilePattern(CommandDeclaration $command){
+        return $this->getCommandRunDir($command) . "/*.csrun.json";
     }
     
-    public static function countRunningInstances(CommandDeclaration $command){
-        $pattern = self::getCommandFilePattern($command);
+    public function countRunningInstances(CommandDeclaration $command){
+        $pattern = $this->getCommandFilePattern($command);
         return count(glob($pattern));
         
     }
 
 
-    public static function runDir($runDir = null){
+    public function runDir($runDir = null){
         if(null !== $runDir)
-            self::$csRunDir = $runDir;
+            $this->csRunDir = $runDir;
         
-        return self::$csRunDir;
+        return $this->csRunDir;
     }
 
     
     /**
      * @param \CS\Command $command
      */
-    public static function registerCommand(\CliStart\CommandDeclaration $command){
-        self::$commands[$command->getName()] = $command;
+    public function registerCommand(\CliStart\CommandDeclaration $command){
+        $this->commands[$command->getName()] = $command;
     }
 
     /**
@@ -122,16 +212,16 @@ abstract class Cli {
      * @param \CliStart\Daemon $daemon
      * @return Daemon
      */
-    public static function daemon(\CliStart\Daemon $daemon=null){
+    public function daemon(\CliStart\Daemon $daemon=null){
         if(null !== $daemon)
-            self::$daemon = $daemon;
+            $this->daemon = $daemon;
         
-        return self::$daemon;
+        return $this->daemon;
     }
    
     
-    public static function hasCommand($name){
-        return isset(self::$commands[$name]);
+    public function hasCommand($name){
+        return isset($this->commands[$name]);
     }
     
     /**
@@ -139,39 +229,39 @@ abstract class Cli {
      * @param type $name
      * @return CommandDeclaration
      */
-    public static function getCommandDeclaration($name){
-        return self::$commands[$name];
+    public function getCommandDeclaration($name){
+        return $this->commands[$name];
     }
     
     
     /**
      * create a jsonfile representation of the command
      */
-    public static function jsonTrace($dir){
+    public function jsonTrace($dir){
         
         if(!is_dir($dir) || !is_writable($dir))
             return false;
         
         $data = array(
-            "cliId" => self::$cliId,
-            "pid" => self::$pid,
-            "startTime" => self::$startTime,
-            "commandString" => self::commandString(),
-            "name" => self::$command->getName(),
-            "description" => self::$command->getDescription()
+            "cliId" => $this->cliId,
+            "pid" => $this->pid,
+            "startTime" => $this->startTime,
+            "commandString" => $this->commandString(),
+            "name" => $this->command->getName(),
+            "description" => $this->command->getDescription()
         );
         
         $jsonString = json_encode($data);
         
-        return file_put_contents(self::_getJsonFilename($dir), $jsonString);
+        return file_put_contents($this->_getJsonFilename($dir), $jsonString);
     }
     
-    public static function deleteTrace($dir){
-        unlink(self::_getJsonFilename($dir));
+    public function deleteTrace($dir){
+        unlink($this->_getJsonFilename($dir));
     }
     
-    protected static function _getJsonFilename($dir){
-        return $dir . "/" . self::$cliId . ".json";
+    protected function _getJsonFilename($dir){
+        return $dir . "/" . $this->cliId . ".json";
     }
 
 
@@ -179,7 +269,7 @@ abstract class Cli {
      * get the command string
      * @return type
      */
-    public static function commandString(){
+    public function commandString(){
          return join(" ", $_SERVER["argv"]);
     }
 
