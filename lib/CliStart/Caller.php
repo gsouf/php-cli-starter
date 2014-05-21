@@ -20,9 +20,10 @@ class Caller {
 
         $commandString = $this->binFilePath . " " . $commandName;
 
-        foreach($params as $k=>$v){
-            $commandString .= " --$k $v";
-        }
+        if(is_array($params))
+            foreach($params as $k=>$v){
+                $commandString .= " --$k $v";
+            }
 
         $fullCommand = "nohup php $commandString > /dev/null 2>&1 &";
 
