@@ -16,7 +16,7 @@ class Caller {
     }
 
 
-    public function launchBackground($commandName,$params = array()){
+    public function launchBackground($commandName,$params = array(),$outputFile = "/dev/null"){
 
         $commandString = $this->binFilePath . " " . $commandName;
 
@@ -24,7 +24,9 @@ class Caller {
             $commandString .= " --$k $v";
         }
 
-        $fullCommand = "nohup sh -c 'php $commandString' 2>&1 1>/dev/null &";
+        $fullCommand = "nohup php $commandString > /dev/null 2>&1 &";
+
+        exec($fullCommand);
     }
 
 }
