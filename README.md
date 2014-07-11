@@ -1,7 +1,7 @@
 CLI-STARTER
 ===========
 
-|ALPHA TESTING| => all feature are not implemented yet
+**ALPHA TESTING** => all feature are not implemented yet. Doc i not complete and some feature may change or disapear.
 
 Cli starter is a way to start your php scripts in the background.
 You keep full controller over them, you know how they run, what step they run...
