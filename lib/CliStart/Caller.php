@@ -25,7 +25,7 @@ class Caller {
                 $commandString .= " --$k $v";
             }
 
-        $fullCommand = "nohup php $commandString > /dev/null 2>&1 &";
+        $fullCommand = "nohup php $commandString > $outputFile 2>&1 &";
 
         exec($fullCommand);
     }
