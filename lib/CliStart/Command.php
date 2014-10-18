@@ -84,30 +84,16 @@ class Command {
 
         $csid = $this->getCli()->getDaemon()->getCsId();
         
-        $options = $this->getCli()->getDataAdapter()->getRunnerData($csid, "command-options");
+
         
-        if(!$options){
-            $options = array();
-        }
-        
-        $options[$key] = $value;
-        
-        $this->getCli()->getDataAdapter()->setRunnerData($csid, "command-options", $options);
+        $this->getCli()->getDataAdapter()->setRunnerData($csid, "option-$key", $value);
     }
     
     public function retrieveOption($key){
         
         $csid = $this->getCli()->getDaemon()->getCsId();
-        $options = $this->getCli()->getDataAdapter()->getRunnerData($csid, "command-options");
+        return $this->getCli()->getDataAdapter()->getRunnerData($csid, "option-$key");
         
-        if(!$options){
-            return null;
-        }
-        
-        if(isset($options[$key]))
-            return $options[$key];
-        
-        return null;
         
     }
     
