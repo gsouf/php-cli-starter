@@ -80,7 +80,19 @@ class JsonFile implements DataAdapter{
         return count(glob($pattern));
     }
 
-
+    public function findRunningInstances(CommandDeclaration $command){
+        $pattern = $this->getCommandFilePattern($command);
+        $ids = array();
+        
+        $files = glob($pattern);
+        
+        foreach ($files as $f){
+            $ids[] = basename($files,".csrun.json");
+        }
+        
+        return $ids;
+        
+    }
 
     public function createRunner(CommandDeclaration $command,$csid){
         $runDir = $this->getCommandRunDir($command);
@@ -101,6 +113,10 @@ class JsonFile implements DataAdapter{
         unlink($this->getRunnerFile($csid));
     }
 
+    private function __buildRunnerFromFile($filename){
+        $deamon = new Daemon();
+        $deamon->initializeFromJsonFile($filename);
+    }
 
     public function getRunnerData($csid , $name){
         

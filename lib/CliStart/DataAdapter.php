@@ -18,5 +18,6 @@ interface DataAdapter {
     public function getRunner($csid);
     public function deleteRunner($csid);
     public function countRunningInstances(CommandDeclaration $commandName);
+    public function findRunningInstances(CommandDeclaration $commandName);
 
 }
