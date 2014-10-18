@@ -36,7 +36,7 @@ class JsonFile implements DataAdapter{
 
 
     public function getCommandFilePattern(CommandDeclaration $command){
-        return $this->getRunDir($command) . "/*.csrun.json";
+        return $this->getCommandRunDir($command) . "/*.csrun.json";
     }
 
 
