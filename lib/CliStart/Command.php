@@ -73,13 +73,43 @@ class Command {
     }
 
     /**
-     * @return mixed
+     * @return Cli
      */
     public function getCli()
     {
         return $this->cli;
     }
 
+    public function storeOption($key,$value){
+
+        $csid = $this->getCli()->getDaemon()->getCsId();
+        
+        $options = $this->getCli()->getDataAdapter()->getRunnerData($csid, "command-options");
+        
+        if(!$options){
+            $options = array();
+        }
+        
+        $options[$key] = $value;
+        
+        $this->getCli()->getDataAdapter()->setRunnerData($csid, "command-options", $options);
+    }
+    
+    public function retrieveOption($key){
+        
+        $csid = $this->getCli()->getDaemon()->getCsId();
+        $options = $this->getCli()->getDataAdapter()->getRunnerData($csid, "command-options");
+        
+        if(!$options){
+            return null;
+        }
+        
+        if(isset($options[$key]))
+            return $options[$key];
+        
+        return null;
+        
+    }
     
     
 }

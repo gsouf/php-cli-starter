@@ -68,6 +68,15 @@ class Cli {
 
     }
 
+    /**
+     * 
+     * @return Daemon
+     */
+    public function getDaemon() {
+        return $this->daemon;
+    }
+
+        
     public function start(){
 
         $daemon = $this->daemon;

@@ -103,7 +103,24 @@ class JsonFile implements DataAdapter{
 
 
     public function getRunnerData($csid , $name){
-        //file_get_contents();
+        
+        $filename = $this->getRunnerFile($csid);
+
+        if(!$filename)
+            return false;
+
+        
+        $actualData = json_decode(file_get_contents($filename),true);
+
+        if(null === $actualData)
+            return null;
+        
+        if(isset($actualData[$name])){
+            return $actualData[$name];
+        }else{
+            return null;
+        }
+        
     }
 
     public function setRunnerDataArray($csid , $newData){
