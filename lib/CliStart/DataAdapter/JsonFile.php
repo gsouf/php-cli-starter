@@ -87,7 +87,7 @@ class JsonFile implements DataAdapter{
         $files = glob($pattern);
         
         foreach ($files as $f){
-            $ids[] = basename($files,".csrun.json");
+            $ids[] = basename($f,".csrun.json");
         }
         
         return $ids;
