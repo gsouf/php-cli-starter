@@ -244,6 +244,16 @@ class Cli {
         return $this->commands[$name];
     }
     
+    public function getRunningInstancesByCommandByName($name){
+        
+        $command = $this->getCommandDeclaration($name);
+        
+        if(!$command)
+            return array();
+        
+        return $this->dataAdapter->findRunningInstances($command);
+    }
+    
     
     /**
      * create a jsonfile representation of the command
